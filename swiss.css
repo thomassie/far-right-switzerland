@@ -1,0 +1,395 @@
+/* Europe's Divides, The Far Right in Switzerland: styles, all scoped under .sfr so they cannot touch the
+   host page. The base (layout, type, switches, tooltip, table, footer) is the same as People vs
+   Parliament's pvp.css; colours come from the host's tokens (--paper, --ink, --muted, --rule, --red,
+   --blue, --link), so the page follows the host's light and dark themes; theme.css defines them for
+   the standalone page. Layout reacts to the width of its own container, not the screen.
+   One meaning per colour on this page: red = far right, ink = the national (federal) result. */
+.sfr { container: sfr / inline-size; position: relative; color: var(--ink); }
+/* Embedded (default): the host page provides width and side gutters. */
+.sfr:not(.sfr--standalone) .wrap { max-width: none; margin-inline: 0; padding-left: 0; padding-right: 0; }
+.sfr:not(.sfr--standalone) .masthead { padding-top: 0; }
+/* Shield from the host's global element styles (zero-specificity :where, so every rule below still wins). */
+.sfr :where(h1, h2, h3, h4, p, ul, ol, li, dl, dt, dd, figure, blockquote, table, th, td, summary, label, select, button, span, b, em, small) {
+  color: inherit; font-family: inherit; letter-spacing: normal; text-transform: none; text-shadow: none; }
+.sfr :where(a) { color: var(--link); text-decoration: underline; text-decoration-style: solid; }
+
+/* Layout: soft Bauhaus. An asymmetric two-column grid: a narrow rail carries each section's
+   heading and explanation, a wide field carries the chart. One column under 760px.
+   Colours come only from theme.css tokens. Type follows the main website: Helvetica/Arial for
+   headings, reading text and italic quotations; Google Sans Code for navigation and supporting
+   information (labels, axes, notes, figures in tables). */
+.sfr {
+  --font-display: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-support: "Google Sans Code", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --on-yellow: #2D3238;          /* text on the yellow fill, same in both themes */
+  --radius: 14px;
+  --gap: clamp(1.5rem, 4vw, 3rem);
+  --step--1: 0.8125rem;
+  --step-0: 1.0625rem;
+  --step-1: 1.3125rem;
+  --step-2: clamp(1.5rem, 3vw, 1.875rem);
+  --step-3: clamp(2.5rem, 7vw, 4.5rem);
+  --hero: clamp(4rem, 14vw, 8.5rem);
+  --max: 1160px;
+}
+.sfr *, .sfr *::before, .sfr *::after { box-sizing: border-box; }
+.sfr [hidden] { display: none !important; }
+.sfr {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.sfr .wrap {
+  max-width: var(--max);
+  margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.sfr h1, .sfr h2, .sfr h3 { font-family: var(--font-display); font-weight: 500; line-height: 1.1; margin: 0; text-wrap: balance; }
+.sfr p { margin: 0; }
+.sfr a { text-underline-offset: 0.18em; }
+.sfr em, .sfr q, .sfr blockquote { font-family: var(--font-body); font-style: italic; }
+.sfr blockquote { margin: 0; padding-left: 1.25rem; border-left: 3px solid var(--yellow); font-size: var(--step-1); line-height: 1.45; }
+.sfr .eyebrow {
+  font-family: var(--font-support);
+  font-size: var(--step--1);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+/* Title full stop: a drawn circle (Helvetica's full stop is square). Sits on the baseline. */
+/* An inline graphic, not an empty box: every engine puts its bottom edge on the text baseline. */
+.sfr .title-dot { display: inline-block; width: 0.15em; height: 0.15em; margin: 0 0 0 0.06em; padding: 0; vertical-align: baseline; overflow: visible; }
+.sfr .title-dot circle { fill: var(--red); }
+/* ---------- Masthead ---------- */
+.sfr .masthead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--gap);
+  align-items: end;
+  padding-block: clamp(2.5rem, 7vw, 5rem) 0;
+}
+.sfr .masthead__text { display: grid; gap: 1.25rem; max-width: 46rem; min-width: 0; }
+.sfr .masthead h1 { font-size: var(--step-3); letter-spacing: -0.02em; }
+.sfr .lede { font-size: var(--step-1); line-height: 1.45; max-width: 38rem; }
+/* Bauhaus mark: people (circle), parliament (square), the vote (half circle). */
+.sfr .mark { position: relative; width: 168px; height: 168px; flex: none; }
+.sfr .mark span { position: absolute; display: block; }
+.sfr .mark__square { left: 0; bottom: 0; width: 104px; height: 104px; background: var(--blue); border-radius: 10px; }
+.sfr .mark__circle { right: 0; top: 0; width: 104px; height: 104px; background: var(--red); border-radius: 50%; }
+.sfr .mark__half { right: 8px; bottom: 0; width: 72px; height: 36px; background: var(--yellow); border-radius: 72px 72px 0 0; }
+
+/* ---------- Sections ---------- */
+.sfr .block {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: var(--gap);
+  padding-block: clamp(2.5rem, 6vw, 4.5rem);
+  border-bottom: 1px solid var(--rule);
+}
+.sfr .block__rail { display: grid; gap: 0.875rem; align-content: start; min-width: 0; }
+.sfr .block__rail h2 { font-size: var(--step-2); }
+.sfr .block__rail p { color: var(--muted); max-width: 26rem; }
+.sfr .block__body { display: grid; gap: 1.25rem; min-width: 0; align-content: start; }
+.sfr .note { font-family: var(--font-support); font-size: var(--step--1); color: var(--muted); }
+/* ---------- Charts ---------- */
+.sfr .chart { position: relative; width: 100%; min-width: 0; }
+.sfr .chart svg { display: block; overflow: visible; }
+.sfr .chart text { font-family: var(--font-support); font-size: 11.5px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.sfr .chart .grid line { stroke: var(--rule); stroke-width: 1; shape-rendering: crispEdges; }
+.sfr .chart .grid line.mid { stroke: var(--muted); stroke-opacity: 0.55; }
+
+.sfr .chart .axis-title { font-family: var(--font-support); font-size: 12px; fill: var(--ink); }
+
+.sfr .focus-ring { fill: none; stroke: var(--ink); stroke-width: 2px; pointer-events: none; }
+.sfr .overlay { fill: transparent; }
+.sfr .overlay:focus { outline: none; }
+.sfr .overlay:focus-visible { stroke: var(--link); stroke-width: 2px; }
+.sfr .tooltip {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+  width: max-content;
+  max-width: min(18rem, calc(100% - 8px));
+  padding: 0.75rem 0.875rem;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.12);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+.sfr .tooltip[hidden] { display: none; }
+.sfr .tt__meta { font-family: var(--font-support); font-size: 0.75rem; color: var(--muted); }
+.sfr .tt__title { font-weight: 500; margin: 0.2rem 0 0.5rem; }
+.sfr .tt__rows { display: grid; gap: 0.2rem; margin: 0; }
+.sfr .tt__rows div { display: flex; justify-content: space-between; gap: 1rem; }
+.sfr .tt__rows dt { font-family: var(--font-support); font-size: 0.8125rem; display: flex; align-items: center; gap: 0.45rem; color: var(--muted); }
+.sfr .tt__rows dd { margin: 0; font-family: var(--font-support); font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+
+/* ---------- Filters & legend ---------- */
+.sfr .filters { display: grid; gap: 0.5rem; }
+/* Switches ("bar index"): plain labels on a thin rule, a thick ink bar under the selected one.
+   Ink and paper only, so they never borrow the charts' colours or shapes. The rule runs the full
+   width of the column: a background repeating every 44px (the buttons' fixed height), so each
+   wrapped row on a phone gets its own full-width rule too. The bars are inset shadows, so nothing
+   shifts when the selection moves (Google Sans Code keeps its width at weight 500). */
+.sfr .seg {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  background: repeating-linear-gradient(to bottom, transparent 0 43px, var(--rule) 43px 44px);
+}
+.sfr .seg button {
+  font: inherit;
+  font-family: var(--font-support);
+  font-size: 0.875rem;
+  line-height: 1.2;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 0.875rem;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.sfr .seg button:hover { color: var(--ink); box-shadow: inset 0 -4px 0 var(--rule); }
+.sfr .seg button[aria-pressed="true"] { color: var(--ink); font-weight: 500; box-shadow: inset 0 -4px 0 var(--ink); }
+.sfr .seg button:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+@media (forced-colors: active) {
+  .sfr .seg { background: none; }
+  .sfr .seg button { border-bottom: 1px solid CanvasText; box-shadow: none; }
+  .sfr .seg button[aria-pressed="true"] { border-bottom-width: 4px; }
+}
+.sfr .legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; font-family: var(--font-support); font-size: 0.875rem; }
+.sfr .legend span { display: inline-flex; align-items: center; gap: 0.5rem; }
+.sfr .legend .count { font-family: var(--font-support); font-size: 0.8125rem; color: var(--muted); }
+.sfr .summary { font-family: var(--font-support); font-size: 0.875rem; color: var(--muted); }
+.sfr .summary strong { color: var(--ink); font-weight: 500; }
+/* ---------- Table view ---------- */
+.sfr .tableview summary { font-family: var(--font-support); font-size: 0.9375rem; cursor: pointer; color: var(--link); width: max-content; max-width: 100%; }
+.sfr .tableview summary:focus-visible { outline: 2px solid var(--link); outline-offset: 3px; border-radius: 4px; }
+.sfr .tablewrap { overflow-x: auto; max-height: 28rem; overflow-y: auto; margin-top: 0.75rem; border: 1px solid var(--rule); border-radius: 10px; }
+.sfr table { border-collapse: collapse; width: 100%; font-size: 0.875rem; }
+.sfr th, .sfr td { text-align: left; padding: 0.45rem 0.75rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.sfr th { position: sticky; top: 0; background: var(--paper); font-family: var(--font-support); font-size: 0.8125rem; font-weight: 500; white-space: nowrap; }
+.sfr td.num, .sfr th.num { text-align: right; font-family: var(--font-support); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sfr td.date { font-family: var(--font-support); white-space: nowrap; }
+
+/* ---------- Footer ---------- */
+.sfr .foot { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: var(--gap); padding-block: clamp(2.5rem, 6vw, 4rem); }
+.sfr .foot h2 { font-size: var(--step-1); }
+.sfr .foot ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.5rem; color: var(--muted); max-width: 44rem; }
+.sfr .glossary { padding-bottom: 0; }
+.sfr .glossary dl { margin: 0; display: grid; gap: 0.35rem 0; max-width: 44rem; }
+.sfr .glossary dt { font-weight: 500; color: var(--ink); margin-top: 0.85rem; }
+.sfr .glossary dt:first-child { margin-top: 0; }
+.sfr .glossary dd { margin: 0; color: var(--muted); }
+.sfr .glossary dd ul { margin: 0.4rem 0; }
+.sfr .glossary b { font-weight: 500; color: var(--ink); }
+.sfr .foot .credit { font-family: var(--font-support); margin-top: 1.25rem; font-size: var(--step--1); color: var(--muted); }
+.sfr .error { padding: 1rem 1.25rem; border-radius: var(--radius); border: 1px solid var(--red); }
+
+/* Hero: two figures side by side */
+.sfr .hero {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem clamp(1.5rem, 4vw, 3rem);
+  align-items: start;
+  padding-block: clamp(2.5rem, 6vw, 4.5rem);
+  border-bottom: 1px solid var(--rule);
+}
+.sfr .hero__switch { grid-column: 1 / -1; display: grid; gap: 0.4rem; min-width: 0; }
+.sfr .hero__pov { font-family: var(--font-support); font-size: 0.8125rem; color: var(--muted); }
+.sfr .hero__item { display: grid; gap: 0.6rem; align-content: start; min-width: 0; }
+.sfr .hero__label { font-family: var(--font-support); font-size: 0.875rem; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
+.sfr .hero__figure { font-family: var(--font-body); font-weight: 500; font-size: clamp(3.25rem, 10vw, 6.5rem); line-height: 0.9; letter-spacing: -0.03em; }
+.sfr .hero__figure small { font-size: 0.45em; letter-spacing: 0; margin-left: 0.04em; }
+.sfr .hero__text { font-size: var(--step-1); line-height: 1.45; max-width: 28rem; }
+/* swatches */
+.sfr .sfr-sw { display: inline-block; width: 12px; height: 12px; flex: none; border-radius: 2px; }
+.sfr .sfr-sw--blue { background: var(--blue); border-radius: 50%; }
+.sfr .sfr-sw--red { background: var(--red); border-radius: 50%; }
+.sfr .sfr-sw--none { background: repeating-linear-gradient(45deg, var(--paper) 0 2.5px, color-mix(in srgb, var(--muted) 60%, var(--paper)) 2.5px 3.7px); box-shadow: inset 0 0 0 1px var(--rule); }
+.sfr .sfr-sw--out { background: var(--paper); box-shadow: inset 0 0 0 1px var(--muted); }
+/* tooltip table: region next to its country */
+.sfr .tooltip { max-width: min(20rem, calc(100% - 8px)); }
+.sfr .tt__tab { border-collapse: collapse; width: 100%; font-family: var(--font-support); font-size: 0.8125rem; }
+.sfr .tt__tab th, .sfr .tt__tab td { padding: 0.12rem 0 0.12rem 0.9rem; border: 0; text-align: right; font-weight: 400; position: static; background: none; white-space: nowrap; }
+.sfr .tt__tab th:first-child { padding-left: 0; text-align: left; color: var(--muted); white-space: normal; }
+.sfr .tt__tab thead th { font-size: 0.75rem; color: var(--muted); padding-bottom: 0.25rem; max-width: 7rem; overflow: hidden; text-overflow: ellipsis; }
+.sfr .tt__tab td { font-variant-numeric: tabular-nums; }
+.sfr .tt__tab td + td { color: var(--muted); }
+.sfr .tt__tab .tt__sub th, .sfr .tt__tab .tt__sub td { font-size: 0.75rem; color: var(--muted); }
+.sfr .tt__note { margin-top: 0.45rem; font-family: var(--font-support); font-size: 0.75rem; color: var(--muted); }
+@container sfr (max-width: 760px) {
+  .sfr .masthead { grid-template-columns: minmax(0, 1fr); }
+  .sfr .mark { width: 96px; height: 96px; order: -1; }
+  .sfr .mark__square { width: 60px; height: 60px; border-radius: 7px; }
+  .sfr .mark__circle { width: 60px; height: 60px; }
+  .sfr .mark__half { width: 42px; height: 21px; right: 4px; }
+  .sfr .block, .sfr .foot { grid-template-columns: minmax(0, 1fr); }
+  .sfr .seg button { padding: 0 0.6rem; }
+}
+@container sfr (max-width: 520px) {
+  .sfr .hero { grid-template-columns: minmax(0, 1fr); }
+}
+/* the wide region table scrolls inside its frame instead of widening the column */
+.sfr .block__body > * { min-width: 0; }
+
+/* ---------- This page ---------- */
+.sfr .sfr-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+.sfr .sfr-hatch-bg { fill: var(--paper); }
+.sfr .sfr-hatch-line { stroke: var(--muted); stroke-width: 1.2px; stroke-opacity: 0.45; }
+.sfr .sfr-sw--nat { background: var(--ink); border-radius: 1px; width: 10px; height: 10px; }
+.sfr .sfr-sw--fed { background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--ink); border-radius: 1px; width: 9px; height: 9px; }
+.sfr .sfr-sw--pre { background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--muted); border-radius: 50%; width: 10px; height: 10px; }
+.sfr .sfr-key { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; font-family: var(--font-support); font-size: 0.8125rem; color: var(--muted); }
+.sfr .sfr-key span { display: inline-flex; align-items: center; gap: 0.45rem; }
+.sfr .sfr-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; }
+.sfr .sfr-find { font-family: var(--font-support); font-size: 0.875rem; color: var(--muted); }
+.sfr .sfr-tools select {
+  font: inherit; font-family: var(--font-support); font-size: 0.9375rem; color: var(--ink);
+  background: var(--paper); border: 1px solid var(--muted); border-radius: 999px; padding: 0.35rem 0.9rem; max-width: 100%; }
+.sfr .sfr-tools select:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+/* the long arc */
+.sfr .sfr-waves rect { fill: var(--rule); fill-opacity: 0.45; }
+.sfr .chart text.sfr-wave-label { fill: var(--ink); font-size: 11px; }
+.sfr .sfr-stateline { fill: none; stroke: var(--red); stroke-width: 1px; stroke-opacity: 0.28; }
+.sfr .sfr-dot { fill: var(--red); stroke: var(--paper); stroke-width: 0.75px; }
+.sfr .sfr-pre { fill: var(--paper); stroke: var(--muted); stroke-width: 1.25px; }
+.sfr .sfr-natline { fill: none; stroke: var(--ink); stroke-width: 1.75px; }
+.sfr .sfr-nat { fill: var(--ink); stroke: var(--paper); stroke-width: 0.75px; }
+.sfr .has-follow .sfr-dot:not(.is-on) { fill-opacity: 0.22; }
+.sfr .has-follow .sfr-stateline { stroke-opacity: 0.1; }
+.sfr .has-follow .sfr-stateline.is-on { stroke-opacity: 1; stroke-width: 2px; }
+.sfr .chart text.sfr-follow-label { fill: var(--ink); font-size: 12px; font-weight: 500; }
+/* parliaments */
+.sfr .sfr-rowbg { fill: var(--rule); fill-opacity: 0.35; }
+.sfr .sfr-nofree { fill: url(#sfr-hatch); }
+.sfr .sfr-term { fill: var(--red); }
+.sfr .chart text.sfr-rowlabel { fill: var(--ink); font-size: 11.5px; }
+.sfr .sfr-count { fill: none; stroke: var(--red); stroke-width: 1.75px; }
+.sfr .sfr-count-area { fill: var(--red); fill-opacity: 0.14; }
+.sfr .chart text.sfr-count-title { fill: var(--ink); font-size: 11.5px; }
+/* small multiples */
+.sfr .sfr-panelgrid { display: grid; gap: 1.5rem 18px; }
+.sfr .sfr-panel { min-width: 0; }
+.sfr .sfr-panel__name { font-weight: 500; overflow-wrap: anywhere; }
+.sfr .sfr-panel__sub { font-family: var(--font-support); font-size: 0.8125rem; color: var(--muted); margin-bottom: 0.25rem; }
+.sfr .sfr-panel svg { display: block; overflow: visible; }
+.sfr .sfr-panel text { font-family: var(--font-support); font-size: 10.5px; fill: var(--muted); }
+.sfr .sfr-panel .grid line { stroke: var(--rule); stroke-width: 1; shape-rendering: crispEdges; }
+.sfr .sfr-panel-line { fill: none; stroke: var(--red); stroke-width: 1.25px; stroke-opacity: 0.7; }
+.sfr .sfr-panel-fedline { fill: none; stroke: var(--ink); stroke-width: 1px; stroke-opacity: 0.45; }
+.sfr .sfr-panel-fed { fill: var(--paper); stroke: var(--ink); stroke-width: 1.25px; }
+.sfr .sfr-panel .sfr-dot { stroke-width: 0.5px; }
+.sfr .sfr-panels { position: relative; }
+/* parties table */
+.sfr .sfr-tablewrap { max-height: none; }
+.sfr .sfr-tablewrap td b { font-weight: 500; }
+.sfr .sfr-at { color: var(--muted); font-size: 0.75rem; }
+/* county map */
+.sfr .sfr-years { background: repeating-linear-gradient(to bottom, transparent 0 35px, var(--rule) 35px 36px); }
+.sfr .sfr-years button { height: 36px; padding: 0 0.55rem; font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+.sfr .sfr-years button.is-off { color: color-mix(in srgb, var(--muted) 55%, var(--paper)); text-decoration: line-through; text-decoration-thickness: 1px; }
+.sfr .sfr-years button.is-off[aria-pressed="true"] { color: var(--muted); }
+.sfr .sfr-c0 { --c: var(--paper); }
+.sfr .sfr-c1 { --c: color-mix(in oklab, var(--red) 9%, var(--paper)); }
+.sfr .sfr-c2 { --c: color-mix(in oklab, var(--red) 20%, var(--paper)); }
+.sfr .sfr-c3 { --c: color-mix(in oklab, var(--red) 33%, var(--paper)); }
+.sfr .sfr-c4 { --c: color-mix(in oklab, var(--red) 48%, var(--paper)); }
+.sfr .sfr-c5 { --c: color-mix(in oklab, var(--red) 64%, var(--paper)); }
+.sfr .sfr-c6 { --c: color-mix(in oklab, var(--red) 82%, var(--paper)); }
+.sfr .sfr-c7 { --c: var(--red); }
+.sfr .sfr-c8 { --c: color-mix(in oklab, var(--red) 62%, var(--ink)); }
+.sfr .sfr-c9 { --c: color-mix(in oklab, var(--red) 34%, var(--ink)); }
+.sfr .sfr-cx { --c: color-mix(in srgb, var(--rule) 45%, var(--paper)); }
+.sfr .sfr-map { max-width: 760px; }
+.sfr .sfr-map svg path { fill-rule: evenodd; }
+.sfr .sfr-county { fill: var(--c); stroke: var(--paper); stroke-width: 0.35px; stroke-linejoin: round; }
+.sfr .sfr-county.sfr-c0 { stroke: var(--rule); }
+.sfr .sfr-novote { fill: color-mix(in srgb, var(--rule) 70%, var(--paper)); stroke: none; }
+.sfr .sfr-map .sfr-nofree { stroke: none; }
+.sfr .sfr-statelines { fill: none; stroke: var(--ink); stroke-width: 0.8px; stroke-opacity: 0.55; stroke-linejoin: round; pointer-events: none; }
+.sfr .sfr-outline { fill: none; stroke: var(--ink); stroke-width: 0.9px; stroke-opacity: 0.8; stroke-linejoin: round; pointer-events: none; }
+.sfr .sfr-map .focus-ring { stroke-width: 1.75px; stroke-linejoin: round; }
+.sfr .sfr-map__msg { position: absolute; left: 0; right: 0; top: 38%; margin-inline: auto; max-width: 22rem; padding: 0.75rem 1rem;
+  background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; font-family: var(--font-support); font-size: 0.875rem; text-align: center; }
+.sfr .sfr-mapkey { display: grid; gap: 0.5rem; }
+.sfr .sfr-ramp { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.7rem; font-family: var(--font-support); font-size: 0.8125rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sfr .sfr-ramp span { display: inline-flex; align-items: center; gap: 0.3rem; }
+.sfr .sfr-ramp i { display: inline-block; width: 14px; height: 14px; border-radius: 2px; background: var(--c); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent); }
+.sfr .sfr-sw--blank { background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule); }
+.sfr .sfr-sw--novote { background: color-mix(in srgb, var(--rule) 70%, var(--paper)); }
+/* municipality map */
+.sfr .sfr-search {
+  font: inherit; font-family: var(--font-support); font-size: 0.9375rem; color: var(--ink);
+  background: var(--paper); border: 1px solid var(--muted); border-radius: 999px; padding: 0.35rem 0.9rem;
+  width: 15rem; max-width: 100%; }
+.sfr .sfr-search:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+.sfr .sfr-zoom { display: inline-flex; gap: 0.35rem; margin-left: auto; }
+.sfr .sfr-zoom button {
+  font: inherit; font-family: var(--font-support); font-size: 0.875rem; color: var(--ink); background: var(--paper);
+  border: 1px solid var(--rule); border-radius: 999px; min-width: 2.25rem; height: 2.25rem; padding: 0 0.7rem; cursor: pointer; }
+.sfr .sfr-zoom button:hover { border-color: var(--muted); }
+.sfr .sfr-zoom button:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+.sfr .sfr-tmap svg { touch-action: pan-y; cursor: default; overflow: hidden; }   /* a zoomed map stays inside its frame */
+.sfr .sfr-tmap svg.is-zoomed { cursor: grab; }
+.sfr .sfr-tmap path { vector-effect: non-scaling-stroke; }
+.sfr .sfr-tmap .sfr-county { stroke-width: 0.25px; }
+.sfr .sfr-tmap .sfr-nov { stroke: none; }
+/* cross-link to Area Doesn't Vote under both maps */
+.sfr .sfr-xlink { max-width: 44rem; padding: 0.8rem 1rem; border: 1px solid var(--rule); border-radius: 10px; font-size: 0.9375rem; line-height: 1.45; }
+.sfr .sfr-xlink:empty { display: none; }
+.sfr .sfr-xlink b { font-weight: 500; }
+.sfr .sfr-countylines { fill: none; stroke: var(--ink); stroke-width: 0.4px; stroke-opacity: 0.25; pointer-events: none; }
+.sfr .sfr-tmap .focus-ring { stroke-width: 1.75px; }
+@container sfr (max-width: 520px) { .sfr .sfr-zoom { margin-left: 0; } }
+/* what goes with it */
+.sfr .sfr-hollow { fill: var(--paper); fill-opacity: 0.6; stroke: var(--red); stroke-width: 1px; stroke-opacity: 0.75; }
+.sfr .sfr-sw--hollow { background: var(--paper); box-shadow: inset 0 0 0 1.25px var(--red); border-radius: 50%; }
+.sfr .sfr-trend { fill: none; stroke: var(--red); stroke-width: 2px; pointer-events: none; }
+.sfr .sfr-trend--west { stroke-dasharray: 5 4; }
+.sfr .sfr-ln { display: inline-block; width: 18px; height: 0; border-top: 2px solid var(--red); }
+.sfr .sfr-ln--west { border-top-style: dashed; }
+.sfr #sfr-corr tbody tr { cursor: pointer; }
+.sfr #sfr-corr tbody tr:hover td, .sfr #sfr-corr tbody tr.is-on td { background: color-mix(in srgb, var(--rule) 45%, var(--paper)); }
+.sfr #sfr-corr tbody tr.is-on td:first-child { font-weight: 500; }
+.sfr .sfr-rhocell { width: 26%; min-width: 5rem; }
+.sfr .sfr-rho { position: relative; display: block; height: 10px; background: linear-gradient(to right, transparent calc(50% - 0.5px), var(--muted) calc(50% - 0.5px), var(--muted) calc(50% + 0.5px), transparent calc(50% + 0.5px)); }
+.sfr .sfr-rho i { position: absolute; top: 1px; bottom: 1px; background: var(--muted); border-radius: 1px; }
+@container sfr (max-width: 520px) { .sfr .sfr-rhocell { display: none; } }
+
+/* ---------- The Far Right in Switzerland: additions ---------- */
+.sfr .chart .axis path, .sfr .chart .axis line { stroke: var(--rule); }
+.sfr .chart .axis--y .tick line { stroke: var(--rule); shape-rendering: crispEdges; }
+.sfr .sfr-svp0 { fill: none; stroke: var(--muted); stroke-width: 1.5px; stroke-dasharray: 2 3; }
+.sfr .chart text.sfr-svp0-label { fill: var(--muted); font-size: 11px; }
+.sfr .sfr-sw--svp0 { width: 16px; height: 0; border-radius: 0; border-top: 2px dotted var(--muted); background: none; }
+.sfr .sfr-lake { fill: var(--paper); stroke: var(--muted); stroke-width: 0.6px; stroke-opacity: 0.7; pointer-events: none; }
+.sfr .chart .sfr-klabels text { font-family: var(--font-support); font-size: 11px; font-weight: 500; fill: var(--ink); text-anchor: middle; dominant-baseline: central;
+  pointer-events: none; paint-order: stroke; stroke: var(--paper); stroke-width: 3px; stroke-linejoin: round; }
+.sfr .sfr-layer button { font-weight: 400; }
+
+/* What goes with it */
+.sfr .sfr-sw--hollow { background: var(--paper); box-shadow: inset 0 0 0 1.25px var(--red); border-radius: 50%; }
+.sfr .sfr-trend--latin { stroke-dasharray: 5 4; }
+.sfr .sfr-ln--latin { border-top-style: dashed; }
+.sfr .sfr-trend-halo { fill: none; stroke: var(--paper); stroke-width: 5px; stroke-opacity: 0.85; pointer-events: none; }
+.sfr .sfr-wdot.sfr-dot { fill-opacity: 0.55; stroke-width: 0.5px; }
+.sfr .sfr-wdot.sfr-hollow { fill-opacity: 0.35; stroke-opacity: 0.7; }
+.sfr .sfr-zero { stroke: var(--muted); stroke-width: 1px; stroke-dasharray: 2 3; }
+.sfr #sfr-corr th:first-child, .sfr #sfr-corr td:first-child { width: 38%; }
+.sfr #sfr-corr th.num { white-space: normal; }
+.sfr #sfr-corr .sfr-rhocell { width: 16%; min-width: 4rem; }
+@container sfr (max-width: 520px) { .sfr #sfr-corr .sfr-rhocell { display: none; } .sfr #sfr-corr th:first-child, .sfr #sfr-corr td:first-child { width: auto; } }
