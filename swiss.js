@@ -340,20 +340,53 @@
   }
 
   // ---------- tooltips ----------
+  // All parties as bars: far-right parties (counted in that election) in red, the rest grey, small parties together as
+  // "Others"; a thin tick marks Switzerland's share of each party in the same election.
+  const PARTY_NAME = { 'Übrige': 'Others', 'Grüne': 'Greens', 'Sol.': 'Solidarités', 'Sep.': 'Separatists', FPS: 'Freiheits-Partei',
+    FGA: 'FGA (alternative left)', MCR: 'MCG', 'Rep.': 'Republikaner', Lega: 'Lega', Mitte: 'Mitte', CVP: 'CVP', LPS: 'Liberals' };
+  const nameOf = (p, y) => (isFarRight(p, y) ? partyLabel(p, y) : PARTY_NAME[p] || p);
+  const isFarRight = (p, y) => PARTIES.some((x) => x.p === p && y >= x.f0 && (x.f1 == null || y <= x.f1));
+  function partyBars(r, year, isCH) {
+    const all = parseLists(r.pp);
+    if (!all.length) return '';
+    parseLists(r.ps).forEach(([p, v]) => { if (!all.some(([q]) => q === p)) all.push([p, v]); });   // far right below 0.5%
+    const named = all.filter(([p, v]) => p !== 'Übrige' && (v >= 2 || (isFarRight(p, year) && v > 0)))
+      .sort((a, b) => b[1] - a[1]).slice(0, 9);
+    // others: the parties not named (with "Übrige"), plus what the data leaves out (communes list parties from 0.5%)
+    const others = d3.sum(all.filter((d) => !named.includes(d)), (d) => d[1]) + Math.max(0, 100 - d3.sum(all, (d) => d[1]));
+    const nat = new Map(isCH ? [] : parseLists((NATIONAL.find((n) => n.y === year) || {}).pp));
+    const rows = named.concat(others >= 0.05 ? [['Übrige', others]] : []);
+    const top = d3.max(rows, (d) => Math.max(d[1], d[0] === 'Übrige' ? 0 : nat.get(d[0]) || 0));
+    const max = Math.max(20, Math.ceil(top / 10) * 10);
+    const w = (v) => Math.min(100, (100 * v) / max).toFixed(1) + '%';
+    let html = '<div class="sfr-bars" role="list">';
+    rows.forEach(([p, v]) => {
+      const fr = isFarRight(p, year), n = p === 'Übrige' ? null : nat.get(p);
+      html += '<div class="sfr-bar' + (fr ? ' is-fr' : '') + (p === 'Übrige' ? ' is-other' : '') + '" role="listitem">' +
+        '<span class="sfr-bar__l">' + esc(nameOf(p, year)) + '</span><span class="sfr-bar__t"><i style="width:' + w(v) + '"></i>' +
+        (n != null ? '<b style="left:' + w(n) + '" title="Switzerland: ' + pct(n) + '"></b>' : '') + '</span>' +
+        '<span class="sfr-bar__v">' + f1(v) + '%</span></div>';
+    });
+    return html + '</div>' + (isCH ? '' : '<p class="sfr-bars__key"><b></b>Switzerland in ' + year + '</p>');
+  }
+
   function areaTip(r, where, year, extra, k) {
     let html = '<p class="tt__meta">National Council ' + year + (extra ? ' · ' + esc(extra) : '') + '</p><p class="tt__title">' + esc(where) + '</p>';
     if (!r || (r.ok === false)) return html + '<p class="tt__note">No vote held (tacit election).</p>';
     const lists = parseLists(r.ps);
+    const bars = r.pp ? partyBars(r, year, where === 'Switzerland') : '';
     const why = zeroWhy(r, year);
+    html += bars;
     if (why === 'none') html += '<p class="tt__note">' + NONE_NOTE[state.layer] + '</p>';
     else if (why === 'nc') html += '<p class="tt__note">The SVP counts as far right from ' + SVP_FROM + '.</p>';
-    if (k != null ? singleSeat(k, year) : r.ss) html += '<p class="tt__note">One seat, elected by majority vote: the shares are votes for people, counted for their parties. Voters may also write in someone who is not running.</p>';
+    if (k != null ? singleSeat(k, year) : r.ss) html += '<p class="tt__note">One seat, elected by majority vote: votes for people, counted for their parties (people written in included).</p>';
     html += '<table class="tt__tab"><tbody>';
-    if (lists.length) {
-      lists.forEach(([p, v]) => { html += '<tr><th>' + esc(partyLabel(p, year)) + '</th><td>' + pct(v) + '</td></tr>'; });
-      if (lists.length > 1) html += '<tr class="tt__sub"><th>Far right together</th><td>' + pct(r.f) + '</td></tr>';
-    } else if (r.st == null || r.st > 0) html += '<tr><th>Far right</th><td>no votes' + (k != null ? ' here' : '') + '</td></tr>';
-    if (year < SVP_FROM && r.sv0 != null) html += '<tr><th>SVP (not counted before ' + SVP_FROM + ')</th><td>' + pct(r.sv0) + '</td></tr>';
+    if (!bars) {
+      if (lists.length) lists.forEach(([p, v]) => { html += '<tr><th>' + esc(partyLabel(p, year)) + '</th><td>' + pct(v) + '</td></tr>'; });
+      else if (r.st == null || r.st > 0) html += '<tr><th>Far right</th><td>no votes' + (k != null ? ' here' : '') + '</td></tr>';
+    }
+    if (lists.length > 1) html += '<tr class="tt__sub"><th>Far right together</th><td>' + pct(r.f) + '</td></tr>';
+    if (!bars && year < SVP_FROM && r.sv0 != null) html += '<tr><th>SVP (not counted before ' + SVP_FROM + ')</th><td>' + pct(r.sv0) + '</td></tr>';
     if (r.e != null) html += '<tr class="tt__sub"><th>Eligible voters</th><td>' + num(r.e) + '</td></tr>';
     if (r.t != null) html += '<tr><th>Turnout</th><td>' + pct(r.t) + '</td></tr>';
     return html + '</tbody></table>';

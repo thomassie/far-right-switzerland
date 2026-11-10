@@ -400,3 +400,18 @@
 .sfr .sfr-dot0 { fill: var(--paper); stroke: var(--muted); stroke-width: 1px; }
 .sfr .sfr-sw--none { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--muted) 55%, transparent) 0 1px, var(--paper) 1px 4px); box-shadow: inset 0 0 0 1px var(--rule); }
 .sfr .sfr-sw--ring { background: var(--paper); box-shadow: inset 0 0 0 1px var(--muted); border-radius: 50%; }
+
+/* all parties in the tooltips: far right red, the rest grey, a tick for Switzerland */
+.sfr .sfr-bars { display: grid; grid-template-columns: auto minmax(5rem, 1fr) auto; column-gap: 0.5rem; row-gap: 0.2rem; align-items: center; margin: 0.4rem 0 0.3rem; font-family: var(--font-support); font-size: 0.75rem; }
+.sfr .sfr-bar { display: contents; }
+.sfr .sfr-bar__l { color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 8.5rem; }
+.sfr .sfr-bar__t { position: relative; height: 0.6rem; }
+.sfr .sfr-bar__t i { position: absolute; left: 0; top: 0; bottom: 0; background: color-mix(in srgb, var(--muted) 45%, transparent); border-radius: 1px; }
+.sfr .sfr-bar.is-fr .sfr-bar__t i { background: var(--red); }
+.sfr .sfr-bar.is-fr .sfr-bar__l { color: var(--red); font-weight: 600; }
+.sfr .sfr-bar.is-other .sfr-bar__l, .sfr .sfr-bar.is-other .sfr-bar__v { color: var(--muted); }
+.sfr .sfr-bar.is-other .sfr-bar__t i { background: color-mix(in srgb, var(--muted) 22%, transparent); }
+.sfr .sfr-bar__t b { position: absolute; top: -0.15rem; bottom: -0.15rem; width: 2px; margin-left: -1px; background: var(--ink); }
+.sfr .sfr-bar__v { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
+.sfr .sfr-bars__key { margin: 0 0 0.35rem; font-family: var(--font-support); font-size: 0.6875rem; color: var(--muted); display: flex; align-items: center; gap: 0.35rem; }
+.sfr .sfr-bars__key b { display: inline-block; width: 2px; height: 0.75rem; background: var(--ink); }
