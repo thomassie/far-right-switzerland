@@ -393,3 +393,10 @@
 .sfr #sfr-corr th.num { white-space: normal; }
 .sfr #sfr-corr .sfr-rhocell { width: 16%; min-width: 4rem; }
 @container sfr (max-width: 520px) { .sfr #sfr-corr .sfr-rhocell { display: none; } .sfr #sfr-corr th:first-child, .sfr #sfr-corr td:first-child { width: auto; } }
+
+/* where no far-right party stood: hatch on the maps, hollow dots in the chart */
+.sfr .sfr-hatch-bg { fill: var(--paper); }
+.sfr .sfr-hatch-ln { stroke: var(--muted); stroke-width: 1.1px; stroke-opacity: 0.55; }
+.sfr .sfr-dot0 { fill: var(--paper); stroke: var(--muted); stroke-width: 1px; }
+.sfr .sfr-sw--none { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--muted) 55%, transparent) 0 1px, var(--paper) 1px 4px); box-shadow: inset 0 0 0 1px var(--rule); }
+.sfr .sfr-sw--ring { background: var(--paper); box-shadow: inset 0 0 0 1px var(--muted); border-radius: 50%; }

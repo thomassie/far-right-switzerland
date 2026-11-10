@@ -139,7 +139,8 @@
     <ul>
       <li>Shares are party strengths in National Council elections: a party&rsquo;s votes as a share of all party votes. Voters have as many votes as their canton has seats, so the Federal Statistical Office adds the cantons up for Switzerland with &ldquo;fictitious voters&rdquo; (party votes divided by seats).</li>
       <li>The far right is the sum of the parties counted as far right in that election (table above), shown together, as the SVP alone, or as the smaller parties alone. The Federal Statistical Office reports the Nationale Aktion and its successor, the Schweizer Demokraten (from 1990), under one code; the Mouvement Citoyens Genevois stands for the National Council as Mouvement Citoyens Romand.</li>
-      <li>Cantons with a single seat (Uri, Obwalden, Nidwalden, Glarus, Appenzell Innerrhoden, and Appenzell Ausserrhoden since 2003) elect by majority vote: their shares are votes for candidates, so one party can look overwhelming. Where only one candidate stands, nobody votes (a tacit election); those cantons have no result in that year.</li>
+      <li>Cantons with a single seat (Uri, Obwalden, Nidwalden, Glarus, Appenzell Innerrhoden, and Appenzell Ausserrhoden since 2003) elect by majority vote: their shares are votes for people, which the Federal Statistical Office counts for their parties. One party can look overwhelming, as the SVP&rsquo;s 82.8% in Nidwalden in 2015, and a small share can come from votes written in for a party member who is not running. Where only one candidate stands, nobody votes (a tacit election); those cantons have no result in that year.</li>
+      <li>A share of 0 usually means nobody of the far right stood: no list, or no candidate where one seat is elected. Before 1991 only the Nationale Aktion and the Republikaner count, and they stood in 6 to 13 cantons; the SVP first stood in many cantons only in the 1990s and 2000s; and in the single-seat cantons the SVP often put up no candidate. The maps hatch these cantons (and their communes), and the chart shows them as hollow dots. A commune where a far-right list stood but got no vote has an ordinary 0.</li>
       <li>Communes: results by commune from the Federal Statistical Office, restated on one commune state and added up onto today&rsquo;s communes; the counting units of the Swiss abroad are in the canton results but not on the commune map. A commune always voted in the canton it then belonged to: the Jura voted in Bern up to the 1975 election, the Laufental up to 1991 and Moutier up to 2023. In the smallest communes a few dozen voters decide the share, so the map notes name the highest share among communes with at least 100 voters. Boundaries: today&rsquo;s communes.</li>
       <li>&ldquo;What goes with it&rdquo;: residents, foreign nationals and age from STATPOP (31 December of the year before the election), jobs by commune of work from STATENT (the same year), median taxable income per tax return from the Federal Tax Administration&rsquo;s direct federal tax statistics (the election&rsquo;s tax year, estimated from income classes), all added up onto today&rsquo;s communes. Language regions and municipality types: the Federal Statistical Office&rsquo;s 2020 classifications; the few Romansh-speaking communes are counted with the German-speaking ones. &rho; is Spearman&rsquo;s rank correlation: 1 means the communes fall in the same order on both, &minus;1 in reverse order, 0 no relation. Trend lines are least-squares fits (on a logarithmic scale for density and jobs).</li>
       <li>Not counted: the Autopartei / Freiheits-Partei (in the National Council from 1987 to 1999), which the PopuList does not class as far right, and other small lists that the Federal Statistical Office reports under &ldquo;others&rdquo;.</li>
@@ -171,6 +172,30 @@
   const num = d3.format(',');
   const val = (r) => (r == null ? null : state.layer === 'svp' ? r.svp : state.layer === 'sm' ? r.sm : r.f);
   const binOf = (v) => (v == null ? 0 : 1 + d3.bisectRight(BINS, v));
+  // Why an area shows 0 in the current layer: 'nc' = the SVP before it counts, 'none' = no party of the layer stood there
+  // (no list, or no candidate where one seat is elected), null = it stood. st: bit 1 SVP stood (and counts), bit 2 a smaller party.
+  const STOOD_BIT = { f: 3, svp: 1, sm: 2 };
+  const zeroWhy = (r, year) => {
+    if (state.layer === 'svp' && year < SVP_FROM) return 'nc';
+    if (!r || r.st == null) return null;
+    return r.st & STOOD_BIT[state.layer] ? null : 'none';
+  };
+  const NONE_KEY = { f: 'No far-right list or candidate', svp: 'No SVP list or candidate', sm: 'No list or candidate of a smaller far-right party' };
+  const NONE_NOTE = {
+    f: 'No far-right party stood here (no list, or no candidate where a single seat is elected), so the 0 is not a vote result.',
+    svp: 'The SVP did not stand here (no list, or no candidate where a single seat is elected), so the 0 is not a vote result.',
+    sm: 'No smaller far-right party stood here, so the 0 is not a vote result.',
+  };
+  const NC_KEY = 'SVP not counted before ' + SVP_FROM;
+  // a hatch for areas where nobody of the layer stood; one pattern per drawing (ids must be unique on the page)
+  const hatch = (svg, id) => {
+    const p = svg.append('defs').append('pattern').attr('id', id).attr('patternUnits', 'userSpaceOnUse')
+      .attr('width', 5).attr('height', 5).attr('patternTransform', 'rotate(45)');
+    p.append('rect').attr('class', 'sfr-hatch-bg').attr('width', 5).attr('height', 5);
+    p.append('line').attr('class', 'sfr-hatch-ln').attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 5);
+    return 'url(#' + id + ')';
+  };
+  const singleSeat = (k, y) => { const c = CANTON_ROWS.find((r) => r.y === y && r.k === k); return !!(c && c.ss); };
   const partyLabel = (p, y) => ({ SVP: 'SVP', SD: y < 1990 ? 'Nationale Aktion' : 'Schweizer Demokraten', 'Rep.': 'Republikaner',
     EDU: 'EDU', Lega: 'Lega dei Ticinesi', MCR: 'MCG (as MCR)' }[p] || p);
   const parseLists = (ps) => (ps ? ps.split('|').map((x) => { const i = x.lastIndexOf(':'); return [x.slice(0, i), +x.slice(i + 1)]; }) : []);
@@ -315,15 +340,19 @@
   }
 
   // ---------- tooltips ----------
-  function areaTip(r, where, year, extra) {
+  function areaTip(r, where, year, extra, k) {
     let html = '<p class="tt__meta">National Council ' + year + (extra ? ' · ' + esc(extra) : '') + '</p><p class="tt__title">' + esc(where) + '</p>';
     if (!r || (r.ok === false)) return html + '<p class="tt__note">No vote held (tacit election).</p>';
     const lists = parseLists(r.ps);
+    const why = zeroWhy(r, year);
+    if (why === 'none') html += '<p class="tt__note">' + NONE_NOTE[state.layer] + '</p>';
+    else if (why === 'nc') html += '<p class="tt__note">The SVP counts as far right from ' + SVP_FROM + '.</p>';
+    if (k != null ? singleSeat(k, year) : r.ss) html += '<p class="tt__note">One seat, elected by majority vote: the shares are votes for people, counted for their parties. Voters may also write in someone who is not running.</p>';
     html += '<table class="tt__tab"><tbody>';
     if (lists.length) {
       lists.forEach(([p, v]) => { html += '<tr><th>' + esc(partyLabel(p, year)) + '</th><td>' + pct(v) + '</td></tr>'; });
       if (lists.length > 1) html += '<tr class="tt__sub"><th>Far right together</th><td>' + pct(r.f) + '</td></tr>';
-    } else html += '<tr><th>Far right</th><td>no votes</td></tr>';
+    } else if (r.st == null || r.st > 0) html += '<tr><th>Far right</th><td>no votes' + (k != null ? ' here' : '') + '</td></tr>';
     if (year < SVP_FROM && r.sv0 != null) html += '<tr><th>SVP (not counted before ' + SVP_FROM + ')</th><td>' + pct(r.sv0) + '</td></tr>';
     if (r.e != null) html += '<tr class="tt__sub"><th>Eligible voters</th><td>' + num(r.e) + '</td></tr>';
     if (r.t != null) html += '<tr><th>Turnout</th><td>' + pct(r.t) + '</td></tr>';
@@ -371,8 +400,9 @@
       svg.append('text').attr('class', 'sfr-svp0-label').attr('x', x(p0.y) + 4).attr('y', y(p0.sv0) - 7).text('SVP, not counted until ' + SVP_FROM);
     }
     const jitter = (k) => ((k * 37) % 11 - 5) * Math.min(1.6, W / 400);
-    const dots = svg.append('g').selectAll('circle').data(rows.filter((r) => val(r) > 0 || state.layer === 'f')).join('circle')
-      .attr('class', 'sfr-dot').attr('r', W < 480 ? 2.6 : 3.2)
+    const shown = rows.filter((r) => zeroWhy(r, r.y) !== 'nc');
+    const dots = svg.append('g').selectAll('circle').data(shown).join('circle')
+      .attr('class', (r) => (zeroWhy(r, r.y) === 'none' ? 'sfr-dot0' : 'sfr-dot')).attr('r', W < 480 ? 2.6 : 3.2)
       .attr('cx', (r) => x(r.y) + jitter(r.k)).attr('cy', (r) => y(val(r)));
     const nat = NATIONAL.map((n) => ({ ...n, v: val(n) }));
     svg.append('path').attr('class', 'sfr-natline').attr('d', d3.line((n) => x(n.y), (n) => y(n.v))(nat));
@@ -385,11 +415,22 @@
     dots.on('pointermove', (ev, r) => show(ev, r, CANTONS[r.k])).on('click', (ev, r) => show(ev, r, CANTONS[r.k]));
     sq.on('pointermove', (ev, n) => show(ev, n, 'Switzerland')).on('click', (ev, n) => show(ev, n, 'Switzerland'));
     svg.on('pointerleave', () => tip.hide());
+    const rings = shown.filter((r) => zeroWhy(r, r.y) === 'none').length;
     $('#arc-key').innerHTML = '<span><i class="sfr-sw sfr-sw--red"></i>a canton</span><span><i class="sfr-sw sfr-sw--nat"></i>Switzerland</span>' +
+      (rings ? '<span><i class="sfr-sw sfr-sw--ring"></i>' + NONE_KEY[state.layer].replace(/^No/, 'no') + ' in the canton</span>' : '') +
       (state.layer !== 'sm' ? '<span><i class="sfr-sw sfr-sw--svp0"></i>SVP before ' + SVP_FROM + ', not counted</span>' : '');
     const first = NATIONAL[0], s91 = NATIONAL.find((n) => n.y === SVP_FROM), last = NATIONAL[NATIONAL.length - 1];
     $('#all-text').textContent = 'Until ' + (SVP_FROM - 4) + ' the far right counted here is the Nationale Aktion and the Republikaner (' + pct(first.f) + ' in ' + first.y +
-      '). From ' + SVP_FROM + ', when the SVP counts, the far right rose from ' + pct(s91.f) + ' to ' + pct(last.f) + ' in ' + last.y + '.';
+      '). From ' + SVP_FROM + ', when the SVP counts, the far right rose from ' + pct(s91.f) + ' to ' + pct(last.f) + ' in ' + last.y + '.' +
+      (rings ? ' Hollow dots at 0 are cantons where no ' + (state.layer === 'svp' ? 'SVP' : state.layer === 'sm' ? 'smaller far-right' : 'far-right') +
+        ' list or candidate stood; they say nothing about how people voted.' : '') + singleSeatText(shown);
+  }
+
+  // The highest dots are often cantons with a single seat, where one candidate's vote is the whole result.
+  function singleSeatText(shown) {
+    const top = shown.reduce((a, c) => (val(c) > val(a) ? c : a), shown[0]);
+    if (!top || !top.ss) return '';
+    return ' The highest dot, ' + CANTONS[top.k] + ' in ' + top.y + ' (' + pct(val(top)) + '), is a canton with a single seat, elected by majority vote: there the share is the vote for one person.';
   }
 
   // ---------- maps ----------
@@ -411,8 +452,11 @@
     const path = d3.geoPath(proj);
     const byK = new Map(CANTON_ROWS.filter((r) => r.y === state.year).map((r) => [r.k, r]));
     const svg = d3.select(el).insert('svg', ':first-child').attr('width', W).attr('height', H).attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img');
+    const hfill = hatch(svg, 'sfr-hatch-k');
+    const kWhy = (f) => { const r = byK.get(f.id); return r && r.ok ? zeroWhy(r, state.year) : null; };
     const shapes = svg.append('g').selectAll('path').data(GEO.cantons).join('path')
-      .attr('class', (f) => { const r = byK.get(f.id); return 'sfr-county ' + (r && r.ok ? 'sfr-c' + binOf(val(r)) : 'sfr-cx'); })
+      .attr('class', (f) => { const r = byK.get(f.id); return 'sfr-county ' + (r && r.ok ? (kWhy(f) ? 'sfr-none' : 'sfr-c' + binOf(val(r))) : 'sfr-cx'); })
+      .style('fill', (f) => (kWhy(f) ? hfill : null))
       .attr('d', path);
     svg.append('g').selectAll('path').data(GEO.lakes).join('path').attr('class', 'sfr-lake').attr('d', path);
     svg.append('path').attr('class', 'sfr-outline').attr('d', path(GEO.outline));
@@ -435,9 +479,14 @@
     const rows = [...byK.values()].filter((r) => r.ok);
     const top = rows.reduce((a, c) => (val(c) > val(a) ? c : a), rows[0]);
     const none = GEO.cantons.filter((f) => !byK.has(f.id) && !(f.id === 26 && state.year < 1979)).map((f) => CANTONS[f.id]);
-    $('#kkey').innerHTML = rampKey() + (GEO.cantons.some((f) => !byK.has(f.id)) ? '<div class="sfr-key"><span><i class="sfr-sw sfr-sw--novote"></i>No result' +
-      (state.year < 1979 ? ' (Jura: part of Bern until 1978)' : '') + '</span></div>' : '');
-    $('#kmap-note').textContent = 'Highest in ' + state.year + ': ' + CANTONS[top.k] + ', ' + pct(val(top)) + ' (' + LAYER_WORD[state.layer] + ').' +
+    const stoodNot = GEO.cantons.filter((f) => kWhy(f) === 'none').map((f) => CANTONS[f.id]);
+    const nc = GEO.cantons.some((f) => kWhy(f) === 'nc');
+    const extra = (stoodNot.length || nc ? '<span><i class="sfr-sw sfr-sw--none"></i>' + (nc ? NC_KEY : NONE_KEY[state.layer]) + '</span>' : '') +
+      (GEO.cantons.some((f) => !byK.has(f.id)) ? '<span><i class="sfr-sw sfr-sw--novote"></i>No result' + (state.year < 1979 ? ' (Jura: part of Bern until 1978)' : '') + '</span>' : '');
+    $('#kkey').innerHTML = rampKey() + (extra ? '<div class="sfr-key">' + extra + '</div>' : '');
+    $('#kmap-note').textContent = (nc ? 'The SVP counts as far right from ' + SVP_FROM + '.' :
+      'Highest in ' + state.year + ': ' + CANTONS[top.k] + ', ' + pct(val(top)) + ' (' + LAYER_WORD[state.layer] + ').' +
+      (stoodNot.length ? ' ' + NONE_KEY[state.layer] + ' in ' + stoodNot.join(', ') + '.' : '')) +
       (none.length ? ' No party results for ' + none.join(', ') + '.' : '');
     svg.attr('aria-label', 'Map of the ' + LAYER_WORD[state.layer] + ' share by canton, National Council ' + state.year + '. Highest: ' + CANTONS[top.k] + ', ' + pct(val(top)) + '.');
   }
@@ -453,9 +502,12 @@
     const proj = d3.geoIdentity().reflectY(true).fitExtent([[2, 2], [W - 2, H - 2]], { type: 'FeatureCollection', features: GEO.communes });
     const path = d3.geoPath(proj);
     const svg = d3.select(el).insert('svg', ':first-child').attr('width', W).attr('height', H).attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img');
+    const hfill = hatch(svg, 'sfr-hatch-c');
     const g = svg.append('g');
+    const cWhy = (f) => { const r = rows.get(f.id); return r && r.pv ? zeroWhy(r, state.year) : null; };
     const shapes = g.append('g').selectAll('path').data(GEO.communes).join('path')
-      .attr('class', (f) => { const r = rows.get(f.id); return 'sfr-county sfr-town ' + (r && r.pv ? 'sfr-c' + binOf(val(r)) : 'sfr-cx'); })
+      .attr('class', (f) => { const r = rows.get(f.id); return 'sfr-county sfr-town ' + (r && r.pv ? (cWhy(f) ? 'sfr-none' : 'sfr-c' + binOf(val(r))) : 'sfr-cx'); })
+      .style('fill', (f) => (cWhy(f) ? hfill : null))
       .attr('d', path);
     g.append('g').selectAll('path').data(GEO.lakes).join('path').attr('class', 'sfr-lake').attr('d', path);
     g.append('path').attr('class', 'sfr-statelines').attr('d', path(GEO.cantonLines));
@@ -470,7 +522,7 @@
           ? 'Its votes are counted together with a neighbouring commune, so there is no separate result.'
           : 'No party results for this canton in this election (for example a tacit election, where nobody votes).') + '</p>';
       }
-      return areaTip(r.pv ? r : null, r.n, state.year, CANTONS[r.k]);
+      return areaTip(r.pv ? r : null, r.n, state.year, CANTONS[r.k], r.k);
     };
     const show = (ev, f) => {
       hl.attr('d', path(f)).attr('visibility', 'visible');
@@ -495,14 +547,17 @@
     };
     CM.view = { zoom, svg, zoomTo };
     const vals = [...rows.values()].filter((r) => r.pv);
+    const cNone = GEO.communes.some((f) => cWhy(f) === 'none'), cNc = GEO.communes.some((f) => cWhy(f) === 'nc');
+    $('#ckey').innerHTML = rampKey() + '<div class="sfr-key">' + (cNone || cNc ? '<span><i class="sfr-sw sfr-sw--none"></i>' +
+      (cNc ? NC_KEY : NONE_KEY[state.layer] + ' in the canton') + '</span>' : '') + '<span><i class="sfr-sw sfr-sw--novote"></i>No separate result</span></div>';
     // The very smallest communes (a few dozen voters) swing to extremes; the note names the highest among the rest.
     const big = vals.filter((r) => r.e && r.t != null && (r.e * r.t) / 100 >= 100);
     const pool = big.length ? big : vals;
     const top = pool.reduce((a, c) => (val(c) > val(a) ? c : a), pool[0]);
     const over = vals.filter((r) => val(r) >= 50).length;
-    $('#cmap-note').textContent = num(vals.length) + ' communes with results in ' + state.year + '. Highest share (' + LAYER_WORD[state.layer] + ')' +
-      (big.length ? ' among communes with at least 100 voters' : '') + ': ' +
-      top.n + ' (' + CANTONS[top.k] + '), ' + pct(val(top)) + '.' + (over ? ' 50% or more in ' + num(over) + ' communes.' : '') +
+    $('#cmap-note').textContent = num(vals.length) + ' communes with results in ' + state.year + '. ' + (cNc ? 'The SVP counts as far right from ' + SVP_FROM + '.' :
+      'Highest share (' + LAYER_WORD[state.layer] + ')' + (big.length ? ' among communes with at least 100 voters' : '') + ': ' +
+      top.n + ' (' + CANTONS[top.k] + '), ' + pct(val(top)) + '.' + (over ? ' 50% or more in ' + num(over) + ' communes.' : '')) +
       ' Zoom with the buttons, by pinching, or with Ctrl or ⌘ and the scroll wheel.';
     svg.attr('aria-label', 'Map of the ' + LAYER_WORD[state.layer] + ' share by commune, National Council ' + state.year + '. Highest: ' + top.n + ', ' + pct(val(top)) + '.');
   }
