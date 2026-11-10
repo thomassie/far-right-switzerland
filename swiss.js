@@ -89,12 +89,13 @@
         ${LAYER_SEG('sfr-layer-c')}
       </div>
       <div class="sfr-tools">
-        <label class="sfr-find" for="sfr-cfind">Find a commune
+        <label class="sfr-find" for="sfr-cfind"><svg class="sfr-mag" viewBox="0 0 16 16" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.75"/><line x1="10" y1="10" x2="14.5" y2="14.5"/></svg><span>Find a commune</span>
           <input id="sfr-cfind" type="search" list="sfr-cnames" autocomplete="off" placeholder="e.g. Schwyz"></label>
         <datalist id="sfr-cnames"></datalist>
-        <div class="sfr-zoom">
+        <div class="sfr-zoom" role="group" aria-label="Zoom">
           <button type="button" id="sfr-czin" aria-label="Zoom in">+</button>
           <button type="button" id="sfr-czout" aria-label="Zoom out">&minus;</button>
+          <span class="sfr-zsep" aria-hidden="true"></span>
           <button type="button" id="sfr-czreset">Reset</button>
         </div>
       </div>
