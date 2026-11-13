@@ -75,12 +75,6 @@
 .sfr .masthead__text { display: grid; gap: 1.25rem; max-width: 46rem; min-width: 0; }
 .sfr .masthead h1 { font-size: var(--step-3); letter-spacing: -0.02em; }
 .sfr .lede { font-size: var(--step-1); line-height: 1.45; max-width: 38rem; }
-/* Bauhaus mark: people (circle), parliament (square), the vote (half circle). */
-.sfr .mark { position: relative; width: 168px; height: 168px; flex: none; }
-.sfr .mark span { position: absolute; display: block; }
-.sfr .mark__square { left: 0; bottom: 0; width: 104px; height: 104px; background: var(--blue); border-radius: 10px; }
-.sfr .mark__circle { right: 0; top: 0; width: 104px; height: 104px; background: var(--red); border-radius: 50%; }
-.sfr .mark__half { right: 8px; bottom: 0; width: 72px; height: 36px; background: var(--yellow); border-radius: 72px 72px 0 0; }
 
 /* ---------- Sections ---------- */
 .sfr .block {
@@ -233,10 +227,6 @@
 .sfr .tt__note { margin-top: 0.45rem; font-family: var(--font-support); font-size: 0.75rem; color: var(--muted); }
 @container sfr (max-width: 760px) {
   .sfr .masthead { grid-template-columns: minmax(0, 1fr); }
-  .sfr .mark { width: 96px; height: 96px; order: -1; }
-  .sfr .mark__square { width: 60px; height: 60px; border-radius: 7px; }
-  .sfr .mark__circle { width: 60px; height: 60px; }
-  .sfr .mark__half { width: 42px; height: 21px; right: 4px; }
   .sfr .block, .sfr .foot { grid-template-columns: minmax(0, 1fr); }
   .sfr .seg button { padding: 0 0.6rem; }
 }
