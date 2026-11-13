@@ -332,6 +332,10 @@
 .sfr .sfr-c7 { --c: var(--red); }
 .sfr .sfr-c8 { --c: color-mix(in oklab, var(--red) 62%, var(--ink)); }
 .sfr .sfr-c9 { --c: color-mix(in oklab, var(--red) 34%, var(--ink)); }
+/* dark theme: the two top classes turn towards yellow, not the light ink, so they grow brighter and stay saturated
+   (lightness keeps rising class by class; mixed with the light ink they faded to pink and read as less) */
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sfr .sfr-c8 { --c: color-mix(in oklab, var(--red) 60%, var(--yellow, var(--red))); } :root:not([data-theme="light"]) .sfr .sfr-c9 { --c: color-mix(in oklab, var(--red) 25%, var(--yellow, var(--red))); } }
+:root[data-theme="dark"] .sfr .sfr-c8 { --c: color-mix(in oklab, var(--red) 60%, var(--yellow, var(--red))); } :root[data-theme="dark"] .sfr .sfr-c9 { --c: color-mix(in oklab, var(--red) 25%, var(--yellow, var(--red))); }
 .sfr .sfr-cx { --c: color-mix(in srgb, var(--rule) 45%, var(--paper)); }
 .sfr .sfr-map { max-width: 760px; }
 .sfr .sfr-map svg path { fill-rule: evenodd; }
