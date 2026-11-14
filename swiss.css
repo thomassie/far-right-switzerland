@@ -317,11 +317,35 @@
 .sfr .sfr-tablewrap { max-height: none; }
 .sfr .sfr-tablewrap td b { font-weight: 500; }
 .sfr .sfr-at { color: var(--muted); font-size: 0.75rem; }
-/* county map */
-.sfr .sfr-years { background: repeating-linear-gradient(to bottom, transparent 0 35px, var(--rule) 35px 36px); }
-.sfr .sfr-years button { height: 36px; padding: 0 0.55rem; font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
-.sfr .sfr-years button.is-off { color: color-mix(in srgb, var(--muted) 55%, var(--paper)); text-decoration: line-through; text-decoration-thickness: 1px; }
-.sfr .sfr-years button.is-off[aria-pressed="true"] { color: var(--muted); }
+/* maps */
+/* elections: a slider, as on Asking for Protection and Area Doesn't Vote. One ink rule, a red dot as the handle (red = the selection), a short
+   tick and a label under each election; the chosen one's label in ink and weight 500. The handle's centre sits 6px in from
+   each end, so the ticks run from 6px to 100% - 6px. Labels that would crowd are left out (is-off), never the chosen one. */
+.sfr .sfr-slider { position: relative; width: 100%; min-width: 0; padding-bottom: 1.5rem; }
+.sfr .sfr-slider input[type="range"] { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 32px;
+  margin: 0; padding: 0; background: transparent; cursor: pointer; touch-action: pan-y; }
+.sfr .sfr-slider input[type="range"]::-webkit-slider-runnable-track { height: 2px; background: var(--ink); border: 0; }
+.sfr .sfr-slider input[type="range"]::-moz-range-track { height: 2px; background: var(--ink); border: 0; }
+.sfr .sfr-slider input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px;
+  margin-top: -5px; background: var(--red); border: 0; border-radius: 50%; box-shadow: none; }
+.sfr .sfr-slider input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; background: var(--red); border: 0; border-radius: 50%;
+  box-shadow: none; }
+.sfr .sfr-slider input[type="range"]:focus { outline: none; }
+.sfr .sfr-slider:has(input:focus-visible) { outline: 2px solid var(--link); outline-offset: 4px; }
+.sfr .sfr-slider__ticks { position: absolute; left: 6px; right: 6px; top: 21px; height: 1.5rem; pointer-events: none; }
+.sfr .sfr-slider__tick { position: absolute; top: 0; transform: translateX(-50%); padding-top: 9px; font-family: var(--font-support);
+  font-size: 0.8125rem; line-height: 1; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sfr .sfr-slider__tick::before { content: ""; position: absolute; left: 50%; top: 0; width: 1px; height: 5px; background: var(--muted); }
+.sfr .sfr-slider__tick:first-child { transform: translateX(-6px); }
+.sfr .sfr-slider__tick:first-child::before { left: 6px; }
+.sfr .sfr-slider__tick:last-child { transform: translateX(calc(-100% + 6px)); }
+.sfr .sfr-slider__tick:last-child::before { left: auto; right: 6px; }
+.sfr .sfr-slider__tick.is-on { color: var(--ink); font-weight: 500; }
+.sfr .sfr-slider__tick.is-off { color: transparent; }
+@media (forced-colors: active) {
+  .sfr .sfr-slider input[type="range"]::-webkit-slider-runnable-track { background: CanvasText; }
+  .sfr .sfr-slider input[type="range"]::-webkit-slider-thumb { background: CanvasText; }
+}
 .sfr .sfr-c0 { --c: var(--paper); }
 .sfr .sfr-c1 { --c: color-mix(in oklab, var(--red) 9%, var(--paper)); }
 .sfr .sfr-c2 { --c: color-mix(in oklab, var(--red) 20%, var(--paper)); }

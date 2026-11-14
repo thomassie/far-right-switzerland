@@ -69,7 +69,7 @@
     </div>
     <div class="block__body">
       <div class="filters">
-        <div class="seg sfr-year" id="sfr-kyear" role="group" aria-label="Election"></div>
+        <div class="sfr-slider" id="sfr-kyear" data-label="National Council election"></div>
         ${LAYER_SEG('sfr-layer-k')}
       </div>
       <div class="sfr-key" id="sfr-kkey"></div>
@@ -85,7 +85,7 @@
     </div>
     <div class="block__body">
       <div class="filters">
-        <div class="seg sfr-year" id="sfr-cyear" role="group" aria-label="Election"></div>
+        <div class="sfr-slider" id="sfr-cyear" data-label="National Council election"></div>
         ${LAYER_SEG('sfr-layer-c')}
       </div>
       <div class="sfr-tools">
@@ -259,7 +259,7 @@
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') PINS.forEach((u) => u.unpin()); });
 
   // one switch state, several switches: every switch of a kind shows the same choice
-  const LISTENERS = { layer: [], year: [] };
+  const LISTENERS = { layer: [], year: [] }, YEAR_SLIDERS = [];
   function fillSeg(el, items, key) {
     el.innerHTML = '';
     items.forEach(([v, label]) => {
@@ -276,9 +276,41 @@
     if (state[key] === v) return;
     state[key] = v;
     if (key === 'layer') { try { localStorage.setItem('sfr-layer', v); } catch (e) { /* ignore */ } }
-    root.querySelectorAll(key === 'layer' ? '.sfr-layer button' : '.sfr-year button')
-      .forEach((b) => b.setAttribute('aria-pressed', String(String(b.dataset.v) === String(v))));
+    if (key === 'layer') root.querySelectorAll('.sfr-layer button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === String(v))));
+    else YEAR_SLIDERS.forEach((s) => s.set(v));
     LISTENERS[key].forEach((fn) => fn());
+  }
+
+  // elections: a slider, as on the other pages. Ticks and labels under the rule; labels that would crowd are left
+  // out, never the chosen one or, where there is room, the first and last. Dragging redraws once per frame.
+  function slider(el, years, value, onPick) {
+    const n = years.length, at = (i) => (n > 1 ? (100 * i) / (n - 1) : 0);
+    el.innerHTML = '<input type="range" min="0" max="' + (n - 1) + '" step="1" aria-label="' + esc(el.dataset.label || 'Election') + '">' +
+      '<div class="sfr-slider__ticks" aria-hidden="true">' + years.map((y, i) => '<span class="sfr-slider__tick" data-v="' + y +
+        '" style="left:' + at(i) + '%">' + y + '</span>').join('') + '</div>';
+    const input = el.querySelector('input'), ticks = [...el.querySelectorAll('.sfr-slider__tick')];
+    let cur = value, raf = 0;
+    const mark = (y) => {
+      const i = years.indexOf(y);
+      if (i >= 0 && +input.value !== i) input.value = String(i);
+      input.setAttribute('aria-valuetext', String(y));
+      ticks.forEach((t, k) => t.classList.toggle('is-on', k === i));
+      const kept = [];
+      [i, 0, n - 1, ...years.keys()].filter((k, j, a) => k >= 0 && a.indexOf(k) === j).forEach((k) => {
+        const r = ticks[k].getBoundingClientRect(), fits = !kept.some((q) => r.left < q.right + 6 && r.right > q.left - 6);
+        if (fits) kept.push(r);
+        ticks[k].classList.toggle('is-off', !fits);
+      });
+    };
+    input.addEventListener('input', () => {
+      const y = years[+input.value];
+      mark(y);
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => { if (y !== cur) { cur = y; onPick(y); } });
+    });
+    if ('ResizeObserver' in window) new ResizeObserver(() => mark(cur)).observe(el);
+    mark(value);
+    return { set: (y) => { cur = y; mark(y); } };
   }
 
   function topoReader(topo) {
@@ -598,8 +630,7 @@
 
   function setupMaps() {
     const kEl = $('#kmap'), cEl = $('#cmap');
-    const yearItems = YEARS.slice().map((y) => [y, String(y)]);
-    root.querySelectorAll('.sfr-year').forEach((el) => fillSeg(el, yearItems, 'year'));
+    YEAR_SLIDERS.push(...['#kyear', '#cyear'].map((id) => slider($(id), YEARS, state.year, (y) => setState('year', y))));
     $('#kkey').innerHTML = rampKey();
     $('#ckey').innerHTML = rampKey() + '<div class="sfr-key"><span><i class="sfr-sw sfr-sw--novote"></i>No separate result</span></div>';
     let kRedraw = null, cRedraw = null;
