@@ -135,7 +135,7 @@
   </section>
 </div>
 <footer class="wrap foot">
-  <h2>How this is counted</h2>
+  <h2>How this is counted${DOT}</h2>
   <div>
     <ul>
       <li>Shares are party strengths in National Council elections: a party&rsquo;s votes as a share of all party votes. Voters have as many votes as their canton has seats, so the Federal Statistical Office adds the cantons up for Switzerland with &ldquo;fictitious voters&rdquo; (party votes divided by seats).</li>

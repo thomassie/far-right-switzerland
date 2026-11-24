@@ -15,12 +15,12 @@
 
 /* Layout: soft Bauhaus. An asymmetric two-column grid: a narrow rail carries each section's
    heading and explanation, a wide field carries the chart. One column under 760px.
-   Colours come only from theme.css tokens. Type follows the main website: Helvetica/Arial for
+   Colours come only from theme.css tokens. Type follows the main website: Arial for
    headings, reading text and italic quotations; Google Sans Code for navigation and supporting
    information (labels, axes, notes, figures in tables). */
 .sfr {
-  --font-display: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-body: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: Arial, Helvetica, sans-serif;
+  --font-body: Arial, Helvetica, sans-serif;
   --font-support: "Google Sans Code", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --on-yellow: #2D3238;          /* text on the yellow fill, same in both themes */
   --radius: 0;
@@ -48,7 +48,7 @@
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-.sfr h1, .sfr h2, .sfr h3 { font-family: var(--font-display); font-weight: 500; line-height: 1.1; margin: 0; text-wrap: balance; }
+.sfr h1, .sfr h2, .sfr h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.1; margin: 0; text-wrap: balance; }
 .sfr p { margin: 0; }
 .sfr a { text-underline-offset: 0.18em; }
 .sfr em, .sfr q, .sfr blockquote { font-family: var(--font-body); font-style: italic; }
@@ -60,9 +60,10 @@
   text-transform: uppercase;
   color: var(--muted);
 }
-/* Title full stop: a drawn circle (Helvetica's full stop is square). Sits on the baseline. */
+/* Heading stop: a drawn circle, 0.12em wide, 0.07em after the last letter (a typed full stop is square). Sits on the
+   baseline. */
 /* An inline graphic, not an empty box: every engine puts its bottom edge on the text baseline. */
-.sfr .title-dot { display: inline-block; width: 0.15em; height: 0.15em; margin: 0 0 0 0.06em; padding: 0; vertical-align: baseline; overflow: visible; }
+.sfr .title-dot { display: inline-block; width: 0.12em; height: 0.12em; margin: 0 0 0 0.07em; padding: 0; vertical-align: baseline; overflow: visible; }
 .sfr .title-dot circle { fill: var(--red); }
 /* ---------- Masthead ---------- */
 .sfr .masthead {
@@ -180,8 +181,8 @@
 .sfr td.date { font-family: var(--font-support); white-space: nowrap; }
 
 /* ---------- Footer ---------- */
-.sfr .foot { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: var(--gap); padding-block: clamp(2.5rem, 6vw, 4rem); }
-.sfr .foot h2 { font-size: var(--step-1); }
+.sfr .foot { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: var(--gap); padding-block: clamp(2.5rem, 6vw, 4.5rem); }
+.sfr .foot h2 { font-size: var(--step-2); }
 .sfr .foot ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.5rem; color: var(--muted); max-width: 44rem; }
 .sfr .glossary { padding-bottom: 0; }
 .sfr .glossary dl { margin: 0; display: grid; gap: 0.35rem 0; max-width: 44rem; }
